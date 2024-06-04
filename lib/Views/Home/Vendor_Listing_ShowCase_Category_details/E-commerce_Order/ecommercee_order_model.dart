@@ -86,19 +86,33 @@ class Orders {
 
 class OrderItems {
   String? productName;
+  List<String>? productImages;
+  String? description;
   String? quantity;
+  String? createdAt;
 
-  OrderItems({this.productName, this.quantity});
+  OrderItems(
+      {this.productName,
+      this.productImages,
+      this.description,
+      this.quantity,
+      this.createdAt});
 
   OrderItems.fromJson(Map<String, dynamic> json) {
     productName = json['product_name'];
+    productImages = json['product_images'].cast<String>();
+    description = json['description'];
     quantity = json['quantity'];
+    createdAt = json['created_at'];
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
     data['product_name'] = this.productName;
+    data['product_images'] = this.productImages;
+    data['description'] = this.description;
     data['quantity'] = this.quantity;
+    data['created_at'] = this.createdAt;
     return data;
   }
 }

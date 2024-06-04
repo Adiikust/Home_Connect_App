@@ -1,9 +1,13 @@
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_stripe/flutter_stripe.dart';
+
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vendor_app/Views/Widgets/overlay_loader_widget.dart';
+import 'package:vendor_app/Views/Widgets/toaster.dart';
 import '../../../../services/exception.dart';
+import 'package:http/http.dart' as http;
 
 class BuyListingService extends ChangeNotifier {
   Dio _dio = Dio();
@@ -158,5 +162,71 @@ class BuyListingService extends ChangeNotifier {
   totalProductPrice({required int price}) {
     totalCartValue = 0;
     totalCartValue += price * totalProductQuantity;
+  }
+
+  //TODO:Strip
+  Map<String, dynamic>? paymentIntentData;
+
+  Future<void> makePayment() async {
+    try {
+      paymentIntentData = await createPaymentIntent("200", "USD");
+      await Stripe.instance.initPaymentSheet(
+          paymentSheetParameters: SetupPaymentSheetParameters(
+        //: const PaymentSheetGooglePay(testEnv: true, currencyCode: ""),
+        merchantDisplayName: "Prospects",
+        customerId: paymentIntentData!['customer'],
+        style: ThemeMode.dark,
+        paymentIntentClientSecret: paymentIntentData!['client_secret'],
+        customerEphemeralKeySecret: paymentIntentData!['ephemeralkey'],
+      ));
+      displayPaymentSheet();
+    } catch (e, s) {
+      print("adnan++++++++++++++ $e$s");
+    }
+  }
+
+  createPaymentIntent(String amount, String currency) async {
+    try {
+      Map<String, dynamic> body = {
+        'amount': calculationAmount(amount),
+        'currency': currency,
+        "payment_method_types[]": 'card',
+      };
+
+      var responce = await http.post(
+        Uri.parse("https://api.stripe.com/v1/payment_intents"),
+        headers: {
+          ///TODO:adding the Secret key
+          'Authorization':
+              "Bearer sk_test_51LTgYjGvKD8UhlGp4EYDG4j1xzCh6dwtgY9rEXiXr2p0tDaLff3okfWjppErN6zxnFQSQXmhjSTjfs8UnAqrVUoC00n21Gi9zi",
+          'Content-type': "application/x-www-form-urlencoded"
+        },
+        body: body,
+      );
+      print('adii${responce.body.toString()}');
+      return jsonDecode(responce.body);
+    } catch (e) {
+      print("Charge ++++++++++++++ $e");
+    }
+  }
+
+  void displayPaymentSheet() async {
+    try {
+      await Stripe.instance.presentPaymentSheet();
+      CustomToaster.ToasterTopSuccess(title: "Successfully");
+    } on Exception catch (e) {
+      if (e is StripeException) {
+        print("Strip++++++++++++++ $e");
+      } else {
+        print("Strip Error+++++++++==$e");
+      }
+    } catch (e) {
+      print("adnan++++++++++++++ $e");
+    }
+  }
+
+  calculationAmount(String amount) {
+    final a = (int.parse(amount)) * 100;
+    return a.toString();
   }
 }
