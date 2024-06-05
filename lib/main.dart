@@ -33,11 +33,11 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 // FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
 //     FlutterLocalNotificationsPlugin();
 
-Future<void> main() async {
+void main() async {
   HttpOverrides.global = MyHttpOverrides();
   WidgetsFlutterBinding.ensureInitialized();
   Stripe.publishableKey =
-      "Ppk_live_51LTgYjGvKD8UhlGprEFyFPD2tOS4K9X5dfRVSHlUjc7DCgYFBNMpqYuY3b1vZKcIWafK8t8IAqd4xVZtEhbZYdy800Vnx9ohXI";
+      "pk_test_51LTgYjGvKD8UhlGpjjPxstUAjeSXkKhFHFIcX93Vmo7X0vZmMfk2LMJAgWyZYyVLsbWSOVAuJv401uOlD4FBNPzg00Z9Yxe2Fz";
   await Firebase.initializeApp();
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   // await Firebase.initializeApp(

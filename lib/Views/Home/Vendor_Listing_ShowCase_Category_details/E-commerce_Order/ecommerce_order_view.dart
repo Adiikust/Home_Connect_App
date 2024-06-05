@@ -62,8 +62,9 @@ class _EcommerceOrderViewState extends State<EcommerceOrderView> {
               EcommerceOrderModel modelData = data![0];
               return ListView.builder(
                 padding: EdgeInsets.zero,
-                itemCount: 6,
+                itemCount: modelData.orders?.length ?? 0,
                 itemBuilder: (context, index) {
+                  final data = modelData.orders?[index];
                   return Card(
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -72,12 +73,15 @@ class _EcommerceOrderViewState extends State<EcommerceOrderView> {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 5, vertical: 3),
                           child: Container(
-                            height: 150,
+                            height: 180,
                             width: 140,
                             decoration: BoxDecoration(
                                 image: DecorationImage(
                                     fit: BoxFit.cover,
-                                    image: AssetImage('images/garden/g1.png')),
+                                    image: NetworkImage(data
+                                            ?.orderItems?[0].productImages?[0]
+                                            .toString() ??
+                                        "")),
                                 color: Colors.grey,
                                 borderRadius: BorderRadius.circular(10)),
                           ),
@@ -95,7 +99,9 @@ class _EcommerceOrderViewState extends State<EcommerceOrderView> {
                                   children: [
                                     Expanded(
                                         child: BuildText(
-                                      text: "Table",
+                                      text: data?.orderItems?[0].productName
+                                              .toString() ??
+                                          "",
                                       size: 16,
                                       color: AppColors.kTextColor1,
                                       fontWeight: FontWeight.bold,
@@ -113,7 +119,9 @@ class _EcommerceOrderViewState extends State<EcommerceOrderView> {
                                           ),
                                           onPressed: () {},
                                           child: BuildText(
-                                            text: "pending",
+                                            text:
+                                                data?.orderStatus.toString() ??
+                                                    "",
                                             size: 12,
                                             color: AppColors.kGreenColor,
                                             fontWeight: FontWeight.bold,
@@ -124,7 +132,8 @@ class _EcommerceOrderViewState extends State<EcommerceOrderView> {
                                     )
                                   ]),
                               BuildText(
-                                text: "Price: 200",
+                                text:
+                                    "Price: ${data?.totalAmount.toString() ?? ""}",
                                 size: 12,
                                 color: AppColors.kTextColor2,
                                 family: 'Montserrat-Regular',
@@ -138,28 +147,43 @@ class _EcommerceOrderViewState extends State<EcommerceOrderView> {
                               ),
                               SizedBox(height: 2),
                               BuildText(
-                                text: "Amount Status: Online",
+                                text:
+                                    "Payment Status : ${data?.paymentStatus.toString() ?? ""}",
                                 size: 12,
                                 color: AppColors.kTextColor2,
                                 family: 'Montserrat-Regular',
                               ),
-                              BuildSizeBox(
-                                  height:
-                                      Get.height * ScreenSizes.SCREEN_SIZE_1),
+                              SizedBox(height: 2),
                               BuildText(
-                                text: "Location",
+                                text:
+                                    "Payment Method : ${data?.paymentMethod.toString() ?? ""}",
                                 size: 12,
                                 color: AppColors.kTextColor2,
-                                fontWeight: FontWeight.bold,
-                                family: "Montserrat-SemiBold",
+                                family: 'Montserrat-Regular',
                               ),
-                              BuildSizeBox(height: 3),
+                              SizedBox(height: 2),
+                              BuildText(
+                                text:
+                                    "Quantity : ${data?.orderItems?[0].quantity.toString() ?? ""}",
+                                size: 12,
+                                color: AppColors.kTextColor2,
+                                family: 'Montserrat-Regular',
+                              ),
+                              SizedBox(height: 2),
+                              BuildText(
+                                text:
+                                    "Date : ${data?.createdAt.toString() ?? ""}",
+                                size: 12,
+                                color: AppColors.kTextColor2,
+                                family: 'Montserrat-Regular',
+                              ),
+                              SizedBox(height: 2),
                               Padding(
                                 padding: const EdgeInsets.only(right: 4),
                                 child: Text(
                                   overflow: TextOverflow.ellipsis,
-                                  maxLines: 2,
-                                  "Finally, build and run your project to ensure everything is working correctly",
+                                  maxLines: 3,
+                                  "Address : ${data?.deliveryAddress.toString() ?? ""}",
                                   style: TextStyle(
                                     fontSize: 12,
                                     color: AppColors.kTextColor2,

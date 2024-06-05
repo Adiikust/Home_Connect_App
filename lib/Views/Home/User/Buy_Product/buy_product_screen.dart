@@ -13,6 +13,7 @@ import 'package:vendor_app/Views/Widgets/build_text.dart';
 import 'package:http/http.dart' as http;
 import 'package:vendor_app/Views/Widgets/overlay_loader_widget.dart';
 import 'package:vendor_app/Views/Widgets/text_button.dart';
+import 'package:vendor_app/Views/Widgets/toaster.dart';
 
 class BuyProductScreen extends StatefulWidget {
   final UserListingModel modelData;
@@ -37,6 +38,7 @@ class _BuyProductScreenState extends State<BuyProductScreen> {
     provider.totalCartValue = 0;
     provider.totalProductQuantity = 1;
     provider.selectedOption = "";
+    provider.PaymentDone = false;
   }
 
   @override
@@ -416,43 +418,113 @@ class _BuyProductScreenState extends State<BuyProductScreen> {
                         height: Get.height * ScreenSizes.SCREEN_SIZE_3),
                     Consumer<BuyListingService>(
                       builder: (context, buyListingServiceData, child) {
-                        return TextBottun(
-                          text: "Place Order",
-                          clickCallback: () async {
-                            if (buyListingServiceData.selectedOption == "0") {
-                              OverlayLoader.instance.show(context);
-                              buyListingServiceData.postBuyListingPaymentData(
-                                  amount:
-                                      buyListingServiceData.totalCartValue == 0
-                                          ? productPrice
-                                          : buyListingServiceData.totalCartValue
-                                              .toString(),
-                                  quantity: buyListingServiceData
-                                      .totalProductQuantity
-                                      .toString(),
-                                  userID: Overseer.userLoginID,
-                                  address:
-                                      addressController.text.trim().toString(),
-                                  vendorId: Overseer.vendorListingID,
-                                  ItemId: productID,
-                                  context: context);
-
-                              // Get.back();
-                            } else if (buyListingServiceData.selectedOption ==
-                                "1") {
-                              Get.back();
-                              await buyListingServiceData.makePayment();
-                            } else {
-                              Get.snackbar(
-                                "Information",
-                                "Please select the payment method",
-                                icon: const Icon(Icons.error_outline,
-                                    color: Colors.white),
-                                snackPosition: SnackPosition.TOP,
+                        return buyListingServiceData.selectedOption == ''
+                            ? SizedBox.shrink()
+                            : Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  if (buyListingServiceData.selectedOption !=
+                                      "0")
+                                    Expanded(
+                                      child: TextBottun(
+                                        text: "Add Card",
+                                        clickCallback: () async {
+                                          await buyListingServiceData
+                                              .makePayment(
+                                                  amount: buyListingServiceData
+                                                              .totalCartValue ==
+                                                          0
+                                                      ? productPrice
+                                                      : buyListingServiceData
+                                                          .totalCartValue
+                                                          .toString());
+                                        },
+                                      ),
+                                    ),
+                                  SizedBox(width: 10),
+                                  Expanded(
+                                    child: TextBottun(
+                                      text: "Place Order",
+                                      clickCallback: () async {
+                                        if (addressController.text.isNotEmpty) {
+                                          if (buyListingServiceData
+                                                  .selectedOption ==
+                                              "0") {
+                                            OverlayLoader.instance
+                                                .show(context);
+                                            buyListingServiceData.postBuyListingPaymentData(
+                                                amount: buyListingServiceData
+                                                            .totalCartValue ==
+                                                        0
+                                                    ? productPrice
+                                                    : buyListingServiceData
+                                                        .totalCartValue
+                                                        .toString(),
+                                                quantity: buyListingServiceData
+                                                    .totalProductQuantity
+                                                    .toString(),
+                                                userID: Overseer.userLoginID,
+                                                address: addressController.text
+                                                    .trim()
+                                                    .toString(),
+                                                vendorId:
+                                                    Overseer.vendorListingID,
+                                                ItemId: productID,
+                                                context: context);
+                                          } else if (buyListingServiceData
+                                                      .selectedOption ==
+                                                  "1" &&
+                                              buyListingServiceData
+                                                      .PaymentDone ==
+                                                  true) {
+                                            OverlayLoader.instance
+                                                .show(context);
+                                            buyListingServiceData.postBuyListingPaymentData(
+                                                amount: buyListingServiceData
+                                                            .totalCartValue ==
+                                                        0
+                                                    ? productPrice
+                                                    : buyListingServiceData
+                                                        .totalCartValue
+                                                        .toString(),
+                                                quantity: buyListingServiceData
+                                                    .totalProductQuantity
+                                                    .toString(),
+                                                userID: Overseer.userLoginID,
+                                                address: addressController.text
+                                                    .trim()
+                                                    .toString(),
+                                                vendorId:
+                                                    Overseer.vendorListingID,
+                                                ItemId: productID,
+                                                context: context);
+                                          } else {
+                                            Get.snackbar(
+                                              "Information",
+                                              "Please First Add Card Payment than place Order",
+                                              backgroundColor: Colors.grey,
+                                              icon: const Icon(
+                                                  Icons.error_outline,
+                                                  color: Colors.white),
+                                              snackPosition: SnackPosition.TOP,
+                                            );
+                                          }
+                                        } else {
+                                          Get.snackbar(
+                                            "Massage",
+                                            "Please add your delivery address",
+                                            backgroundColor: Colors.grey,
+                                            icon: const Icon(
+                                                Icons.error_outline,
+                                                color: Colors.white),
+                                            snackPosition: SnackPosition.TOP,
+                                          );
+                                        }
+                                      },
+                                    ),
+                                  ),
+                                ],
                               );
-                            }
-                          },
-                        );
                       },
                     ),
                     BuildSizeBox(

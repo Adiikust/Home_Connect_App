@@ -76,7 +76,9 @@ class BuyListingService extends ChangeNotifier {
           );
 
           Navigator.pop(context);
+          Navigator.pop(context);
         } else {
+          OverlayLoader.instance.hide();
           Navigator.pop(context);
           print("===This is Else=== ");
         }
@@ -114,18 +116,23 @@ class BuyListingService extends ChangeNotifier {
         if (response.statusCode == 200) {
           print("#############%%%%%%%%%%%%%%%%%%%%${response.statusCode}");
           Map<String, dynamic> map = jsonDecode(response.toString());
+          OverlayLoader.instance.hide();
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text("Order Successfully place"),
               duration: Duration(seconds: 3),
             ),
           );
+          Navigator.pop(context);
+          Navigator.pop(context);
         } else {
+          OverlayLoader.instance.hide();
           Navigator.pop(context);
           print("===This is Else=== ");
         }
       }
     } on DioError catch (exception) {
+      OverlayLoader.instance.hide();
       Navigator.pop(context);
       String content = exception.response.toString();
       print(' Dio error login method api service3 ${DateTime.now().second}');
@@ -140,7 +147,7 @@ class BuyListingService extends ChangeNotifier {
     notifyListeners();
   }
 
-  double totalCartValue = 0;
+  dynamic totalCartValue = 0;
 
   int totalProductQuantity = 1;
   addItem({required String price}) {
@@ -167,9 +174,9 @@ class BuyListingService extends ChangeNotifier {
   //TODO:Strip
   Map<String, dynamic>? paymentIntentData;
 
-  Future<void> makePayment() async {
+  Future<void> makePayment({required String amount}) async {
     try {
-      paymentIntentData = await createPaymentIntent("200", "USD");
+      paymentIntentData = await createPaymentIntent(amount, "USD");
       await Stripe.instance.initPaymentSheet(
           paymentSheetParameters: SetupPaymentSheetParameters(
         //: const PaymentSheetGooglePay(testEnv: true, currencyCode: ""),
@@ -179,7 +186,7 @@ class BuyListingService extends ChangeNotifier {
         paymentIntentClientSecret: paymentIntentData!['client_secret'],
         customerEphemeralKeySecret: paymentIntentData!['ephemeralkey'],
       ));
-      displayPaymentSheet();
+      await displayPaymentSheet();
     } catch (e, s) {
       print("adnan++++++++++++++ $e$s");
     }
@@ -210,10 +217,24 @@ class BuyListingService extends ChangeNotifier {
     }
   }
 
-  void displayPaymentSheet() async {
+  //TODO: Apis Data for online payment
+
+  // String amount = "";
+  // String quantity = "";
+  // String address = "";
+  bool PaymentDone = false;
+  // BuildContext? context;
+  void updatePayment() {
+    PaymentDone = !PaymentDone;
+    notifyListeners();
+    print("^^^^^^^^^^^ $PaymentDone");
+  }
+
+  displayPaymentSheet() async {
     try {
       await Stripe.instance.presentPaymentSheet();
-      CustomToaster.ToasterTopSuccess(title: "Successfully");
+      CustomToaster.ToasterTopSuccess(title: "Card Successfully Added");
+      updatePayment();
     } on Exception catch (e) {
       if (e is StripeException) {
         print("Strip++++++++++++++ $e");
@@ -227,6 +248,7 @@ class BuyListingService extends ChangeNotifier {
 
   calculationAmount(String amount) {
     final a = (int.parse(amount)) * 100;
+    notifyListeners();
     return a.toString();
   }
 }
